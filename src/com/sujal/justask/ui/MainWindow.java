@@ -9,11 +9,10 @@ import javax.swing.JFrame;
 
 import com.sujal.justask.util.Constants;
 
-/**
- * 
- */
 public class MainWindow extends JFrame {
 
+	LoginPanel mLoginPanel;
+	AdminPanel mAdminPanel;
 	
 	public MainWindow() throws HeadlessException {
 		this("Application");
@@ -27,11 +26,18 @@ public class MainWindow extends JFrame {
 	
 	public void init()
 	{
-		showLoginPage();
+//		showLoginPage();
+		showAdminPage();
 	}
 	
 	private void showLoginPage() {
-		this.add(new LoginPanel(this));
+		mLoginPanel = new LoginPanel(this);
+		this.add(mLoginPanel);
+	}
+	
+	private void showAdminPage() {
+		mAdminPanel = new AdminPanel(this);
+		this.add(mAdminPanel);
 	}
 	
 	public void render() {
