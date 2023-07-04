@@ -1,75 +1,84 @@
 package com.sujal.justask.util;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
 import org.bson.Document;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Database {
+	private MongoClient mMongoClient;
+	private MongoDatabase mDatabase;
 
-    private static final String DATABASE_URI = "mongodb://localhost:27017";
-    private static final String DATABASE_NAME = "justask";
+	public static Database CONNECTED_DATABASE = new Database("justask");
 
-    private static final String SURVEYS_COLLECTION = "surveys";
-    private static final String USERS_COLLECTION = "users";
-    private static final String UNREAD_SECTION = "unread";
-    private static final String COMPLETED_SECTION = "completed";
 
-    private MongoClient mongoClient;
-    private MongoDatabase database;
-    private MongoCollection<Document> surveysCollection;
-    private MongoCollection<Document> usersCollection;
+	public Database(String databaseName) {
+		mMongoClient = new MongoClient("localhost");
+		mDatabase = mMongoClient.getDatabase(databaseName);
+	}
 
-    public Database() {
-        connect();
-        initializeCollections();
-    }
+	@Override
+	public void finalize() {
+		mMongoClient.close();
+	}
 
-    private void connect() {
-        MongoClientURI uri = new MongoClientURI(DATABASE_URI);
-        mongoClient = new MongoClient(uri);
-        database = mongoClient.getDatabase(DATABASE_NAME);
-    }
+	public void insertDocument(String collectionName, Document document) {
+		MongoCollection<Document> collection = mDatabase.getCollection(collectionName);
+		collection.insertOne(document);
+	}
 
-    private void initializeCollections() {
-        surveysCollection = database.getCollection(SURVEYS_COLLECTION);
-        usersCollection = database.getCollection(USERS_COLLECTION);
-    }
+	public void updateDocument(String collectionName, Document filter, Document update) {
+		MongoCollection<Document> collection = mDatabase.getCollection(collectionName);
+		collection.updateOne(filter, new Document("$set", update));
+	}
 
-    public void saveSurvey(String surveyName, Document surveyData) {
-        Document survey = new Document("name", surveyName)
-                .append("data", surveyData);
-        surveysCollection.insertOne(survey);
-    }
+	public void deleteDocument(String collectionName, Document filter) {
+		MongoCollection<Document> collection = mDatabase.getCollection(collectionName);
+		collection.deleteOne(filter);
+	}
 
-    public void addUser(String username) {
-        Document user = new Document("username", username)
-                .append(UNREAD_SECTION, new Document())
-                .append(COMPLETED_SECTION, new Document());
-        usersCollection.insertOne(user);
-    }
+	public Document findDocument(String collectionName, Document filter) {
+		MongoCollection<Document> collection = mDatabase.getCollection(collectionName);
+		return collection.find(filter).first();
+	}
 
-    public void addSurveyToUnread(String username, String surveyName, Document surveyData) {
-        Document survey = new Document("name", surveyName)
-                .append("data", surveyData);
-        usersCollection.updateOne(new Document("username", username), new Document("$push", new Document(UNREAD_SECTION, survey)));
-    }
 
-    public void moveSurveyToCompleted(String username, String surveyName) {
-        usersCollection.updateOne(new Document("username", username), new Document("$pull", new Document(UNREAD_SECTION, new Document("name", surveyName))));
-        usersCollection.updateOne(new Document("username", username), new Document("$push", new Document(COMPLETED_SECTION, new Document("name", surveyName))));
-    }
+	public static void createUser(String name, String password, boolean isAdmin) {
+		Document userDocument = new Document("name", name).append("password", password).append("isAdmin", isAdmin);
+		CONNECTED_DATABASE.insertDocument("user", userDocument);
+	}
 
-    public void printSurveys() {
-        for (Document survey : surveysCollection.find()) {
-            System.out.println(survey.toJson());
-        }
-    }
+	public static void createSurvey(String name, List<String> surveyQuestions) {
+		List<Document> surveyAnswerList = new ArrayList<Document>();
+		Document surveyDocument = new Document("name", name).append("questions", surveyQuestions)
+				.append("surveyResponces", surveyAnswerList);
 
-    public void printUsers() {
-        for (Document user : usersCollection.find()) {
-            System.out.println(user.toJson());
-        }
-    }
+		CONNECTED_DATABASE.insertDocument("survey", surveyDocument);
+	}
+
+	public static void addSurveyAnswers(String surveyName, String username, List<String> answers) {
+		Document filter = new Document("name", username);
+		Document surveyAnswerDocument = new Document("surveyName", surveyName).append("answers", answers);
+
+		Document update = new Document("$push", new Document("surveyResponses", surveyAnswerDocument));
+
+		CONNECTED_DATABASE.updateDocument("user", filter, update);
+	}
+
+	public static boolean verifyUser(String username, String password) {
+		Document filter = new Document("name", username);
+		filter.append("password", password);
+
+		Document userDocument = CONNECTED_DATABASE.findDocument("user", filter);
+
+		return userDocument != null;
+	}
+
+	public static void main(String[] args) {
+		createUser("admin", "admin", true);
+	}
 }
