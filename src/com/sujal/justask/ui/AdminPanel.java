@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.bson.Document;
+
 import com.sujal.justask.ApplicationHandler;
 import com.sujal.justask.util.Database;
 import com.sujal.justask.util.Factory;
@@ -20,8 +22,6 @@ import java.awt.event.ActionListener;
 public class AdminPanel extends JPanel {
     private ApplicationHandler mHandler;
     private JList<String> mSurveyList;
-    private JButton mSendMailButton;
-    private JButton mViewResponseButton;
     private JPanel mSurveyView;
 
     public AdminPanel(ApplicationHandler window) {
@@ -54,10 +54,12 @@ public class AdminPanel extends JPanel {
 		});
         leftPanel.add(refreshButton, BorderLayout.NORTH);
         
+        JPanel panel = Factory.createPanel();
+        add(panel, BorderLayout.CENTER);
+        
         mSurveyView = Factory.createPanel();
-        add(mSurveyView, BorderLayout.CENTER);
+        panel.add(mSurveyView);
         mSurveyView.setLayout(new BoxLayout(mSurveyView, BoxLayout.Y_AXIS));
-        add(createUtilityPanel(), BorderLayout.EAST);
     }
     
     private void createMenu() {
@@ -133,30 +135,35 @@ public class AdminPanel extends JPanel {
         	        // Get the selected survey
         	        String selectedSurvey = mSurveyList.getSelectedValue();
 
-        	        // Fetch the survey questions and answers with usernames from the database
-        	        Map<String, List<String>> surveyData = Database.getSurveyQuestionsAndAnswers(selectedSurvey);
-        	        List<String> questions = surveyData.get("questions");
-        	        List<String> answers = surveyData.get("answers");
-        	        List<String> usernames = surveyData.get("usernames");
-
-        	        // Clear the surveyView panel before displaying the questions and answers
-        	        mSurveyView.removeAll();
-
-        	        // Display the survey questions and answers
-        	        for (int i = 0; i < questions.size(); i++) {
-        	            String question = questions.get(i);
-        	            JLabel questionLabel = Factory.createHeading("Question:\n" + question);
-        	            mSurveyView.add(questionLabel);
-
-        	            List<String> userResponses = new ArrayList<>();
-        	            for (int j = 0; j <= i; j++) {
-        	                String username = usernames.get(j);
-        	                String answer = answers.get(j);
-        	                mSurveyView.add(Factory.createLabel(username + ": " + answer));
-        	            }
+        	        // Fetch the survey questions and answers with username's from the database
+        	        Document surveyData = Database.getSurveyQuestionsAndAnswers(selectedSurvey);
+        	        System.out.println(surveyData);
+        	        
+        	        
+        	        @SuppressWarnings("unchecked")
+					List<String> questionStrings = (List<String>) surveyData.get("questions");
+        	        @SuppressWarnings("unchecked")
+					List<List<Document>> responseStrings = (List<List<Document>>) surveyData.get("surveyResponses");
+        	        
+        	        for(String question : questionStrings) {
+        	        	mSurveyView.removeAll();
+        	        	if(responseStrings.size() < questionStrings.size()) {
+        	        		mSurveyView.add(Factory.createLabel("Not Enough Data"));
+        	        		return;
+        	        	}
+        	        	mSurveyView.add(Factory.createHeading(question));
+        	        	List<Document> nameList = (List<Document>) responseStrings.get(questionStrings.indexOf(question));
+        				
+        	        	for(Document response: nameList) {
+        	        		mSurveyView.add(Factory.createLabel(
+        	        				response.getString("user")
+        	        				+ " : " + response.getString("response")
+        	        				));
+        	        	}
         	        }
-
-        	        // Update the surveyView panel to reflect the changes
+        	        
+        	        
+        	        
         	        mSurveyView.revalidate();
         	        mSurveyView.repaint();
         	    }
@@ -169,33 +176,8 @@ public class AdminPanel extends JPanel {
 
 
     private void createUtilityButtons() {
-        mSendMailButton = Factory.createButton("Send Main");
-        mViewResponseButton = Factory.createButton("View Responce");
 
         Dimension buttonSize = new Dimension(150, 30);
-        mSendMailButton.setPreferredSize(buttonSize);
-        mViewResponseButton.setPreferredSize(buttonSize);
-
-        mSendMailButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        mViewResponseButton.setFont(new Font("Arial", Font.PLAIN, 14));
     }
 
-    private JPanel createUtilityPanel() {
-        JPanel utilityPanel = new JPanel();
-        utilityPanel.setBackground(Factory.BACKGROUND_DARK_COLOR);
-        utilityPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        utilityPanel.setLayout(new BoxLayout(utilityPanel, BoxLayout.X_AXIS));
-
-        Box buttonBox = Box.createVerticalBox();
-        buttonBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        buttonBox.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-        buttonBox.add(Box.createVerticalGlue());
-        buttonBox.add(mSendMailButton);
-        buttonBox.add(Box.createVerticalStrut(10));
-        buttonBox.add(mViewResponseButton);
-
-        utilityPanel.add(buttonBox);
-
-        return utilityPanel;
-    }
 }

@@ -98,7 +98,7 @@ public class Database {
 	    return surveyList;
 	}
 	
-	public static Map<String, List<String>> getSurveyQuestionsAndAnswers(String surveyName) {
+	public static Document getSurveyQuestionsAndAnswers(String surveyName) {
 	    Map<String, List<String>> surveyData = new HashMap<>();
 	    List<String> questions = new ArrayList<>();
 	    List<String> answers = new ArrayList<>();
@@ -107,32 +107,7 @@ public class Database {
 	    Document filter = new Document("name", surveyName);
 	    Document surveyDocument = CONNECTED_DATABASE.findDocument("survey", filter);
 
-	    if (surveyDocument != null) {
-	        @SuppressWarnings("unchecked")
-	        List<String> surveyQuestions = (List<String>) surveyDocument.get("questions");
-	        questions.addAll(surveyQuestions);
-
-	        @SuppressWarnings("unchecked")
-			List<List<Document>> surveyResponses = (List<List<Document>>) surveyDocument.get("surveyResponses");
-
-	        if (surveyResponses != null) {
-	            for (List<Document> responseList : surveyResponses) {
-	                for (Document response : responseList) {
-	                    String surveyAnswer = response.getString("response");
-	                    answers.add(surveyAnswer);
-
-	                    String username = response.getString("user");
-	                    usernames.add(username);
-	                }
-	            }
-	        }
-	    }
-
-	    surveyData.put("questions", questions);
-	    surveyData.put("answers", answers);
-	    surveyData.put("usernames", usernames);
-
-	    return surveyData;
+	    return surveyDocument;
 	}
 
 
