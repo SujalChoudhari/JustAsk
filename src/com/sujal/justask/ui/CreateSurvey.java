@@ -18,6 +18,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
+
+import com.sujal.justask.util.Factory;
+
 import javax.swing.BoxLayout;
 
 public class CreateSurvey extends JFrame {
@@ -50,40 +53,60 @@ public class CreateSurvey extends JFrame {
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setTitle("New Survey - Just Ask");
         setBounds(100, 100, 507, 319);
-        contentPane = new JPanel();
+        contentPane = Factory.createPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
+        contentPane.setBackground(Factory.BACKGROUND_DARK_COLOR);
+        contentPane.setForeground(Factory.FOREGROUND_COLOR);
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         
         JPanel surveyNamePanel = new JPanel();
-        surveyNamePanel.add(new JLabel("Name: "));
-        JTextField surveyTextField = new JTextField(24);
+        JLabel nameLabel = new JLabel("Name: ");
+        surveyNamePanel.add(nameLabel);
+        nameLabel.setForeground(Factory.FOREGROUND_COLOR);
+        JTextField surveyTextField = Factory.createTextField(24);
         surveyNamePanel.add(surveyTextField);
         getContentPane().add(surveyNamePanel);
+        
+        surveyNamePanel.setBackground(Factory.BACKGROUND_DARK_COLOR);
+        surveyNamePanel.setForeground(Factory.FOREGROUND_COLOR);
         
         JPanel questionPanel = new JPanel();
         contentPane.add(questionPanel);
         questionPanel.setLayout(new BorderLayout(0, 0));
 
+        questionPanel.setBackground(Factory.BACKGROUND_DARK_COLOR);
+        questionPanel.setForeground(Factory.FOREGROUND_COLOR);
+        
         JScrollPane questionScrollPane = new JScrollPane();
         questionPanel.add(questionScrollPane, BorderLayout.CENTER);
+        questionScrollPane.setBackground(Factory.BACKGROUND_DARK_COLOR);
+        questionScrollPane.setForeground(Factory.FOREGROUND_COLOR);
+        
 
         questionListModel = new DefaultListModel<>();
         questionList = new JList<>(questionListModel);
+        questionList.setBackground(Factory.BACKGROUND_LIGHT_COLOR);
+        questionList.setForeground(Factory.FOREGROUND_COLOR);
+        
         questionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         questionScrollPane.setViewportView(questionList);
 
         JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Factory.BACKGROUND_DARK_COLOR);
+        buttonPanel.setForeground(Factory.FOREGROUND_COLOR);
         contentPane.add(buttonPanel);
 
-        JLabel lblNewLabel = new JLabel("Question:");
-        buttonPanel.add(lblNewLabel);
+        JLabel questionLabel = new JLabel("Question:");
+        questionLabel.setForeground(Factory.FOREGROUND_COLOR);
+        buttonPanel.add(questionLabel);
+        
 
-        questionTextField = new JTextField();
+        questionTextField = Factory.createTextField(12);
         buttonPanel.add(questionTextField);
         questionTextField.setColumns(20);
 
-        JButton addButton = new JButton("Add");
+        JButton addButton = Factory.createButton("Add");
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String question = questionTextField.getText().trim();
@@ -95,7 +118,7 @@ public class CreateSurvey extends JFrame {
         });
         buttonPanel.add(addButton);
 
-        JButton removeButton = new JButton("Remove");
+        JButton removeButton = Factory.createButton("Remove");
         removeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int selectedIndex = questionList.getSelectedIndex();
@@ -106,7 +129,7 @@ public class CreateSurvey extends JFrame {
         });
         buttonPanel.add(removeButton);
 
-        JButton saveButton = new JButton("Save");
+        JButton saveButton = Factory.createButton("Save");
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 List<String> questions = new ArrayList<>();

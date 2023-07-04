@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -22,14 +24,16 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import com.sujal.justask.ApplicationHandler;
 import com.sujal.justask.util.Constants;
 import com.sujal.justask.util.Factory;
+import com.sujal.justask.util.Database;
 /**
  * Login Panel
  * This decides whether the user is an Administrator or a Consumer
  */
 public class LoginPanel extends JPanel {
-    private JFrame mWindow;
+    private ApplicationHandler mHandler;
     
     private JPanel mMainPanel;
     private JPanel mInputPanel;
@@ -45,21 +49,20 @@ public class LoginPanel extends JPanel {
     
     private JButton mSubmitButton;
     
-    public LoginPanel(JFrame window) {
-        mWindow = window;
-        mWindow.setTitle("Just Ask - Login");
+    public LoginPanel(ApplicationHandler window) {
+        mHandler = window;
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        setBackground(Constants.BACKGROUND_DARK_COLOR);
+        setBackground(Factory.BACKGROUND_DARK_COLOR);
         
         mMainPanel = new JPanel();
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.X_AXIS));
-        mMainPanel.setBackground(Constants.BACKGROUND_DARK_COLOR);
+        mMainPanel.setBackground(Factory.BACKGROUND_DARK_COLOR);
         
         mInputPanel = new JPanel();
         mInputPanel.setLayout(new BoxLayout(mInputPanel, BoxLayout.Y_AXIS));
-        mInputPanel.setBackground(Constants.BACKGROUND_DARK_COLOR);
+        mInputPanel.setBackground(Factory.BACKGROUND_DARK_COLOR);
         
         mUserIdLabel = Factory.createLabel("User ID:");
         mUsernameInput = Factory.createTextField(12);
@@ -77,6 +80,7 @@ public class LoginPanel extends JPanel {
         mInputPanel.add(mSubtitleLabel);
         
         mSubmitButton = Factory.createButton("Submit");
+        mSubmitButton.addActionListener(new SubmitListener());
         mInputPanel.add(mSubmitButton);
         
         ImageIcon imageIcon = new ImageIcon(new ImageIcon(
@@ -90,6 +94,24 @@ public class LoginPanel extends JPanel {
         mMainPanel.add(mImageDisplay);
         
         add(mMainPanel);
+    }
+    
+    class SubmitListener implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String usernameString = mUsernameInput.getText();
+			String passwordString = new String(mPasswordInput.getPassword());
+			if(Database.verifyUser(usernameString,passwordString)) {
+				mHandler.showAdminWindow();
+				mHandler.loginFrame.setVisible(false);
+			}
+			else {
+				mSubtitleLabel.setText("Password or Username Incorrect. Ask your Admin to add");
+				mSubtitleLabel.setForeground(new Color(200, 55, 55));
+			}
+		}
+    	
     }
     
     
