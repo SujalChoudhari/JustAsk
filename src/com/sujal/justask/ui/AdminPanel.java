@@ -1,11 +1,16 @@
 package com.sujal.justask.ui;
 
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.sujal.justask.ApplicationHandler;
-import com.sujal.justask.util.Constants;
+import com.sujal.justask.util.Database;
 import com.sujal.justask.util.Factory;
 
 import java.awt.*;
@@ -17,6 +22,7 @@ public class AdminPanel extends JPanel {
     private JList<String> mSurveyList;
     private JButton mSendMailButton;
     private JButton mViewResponseButton;
+    private JPanel mSurveyView;
 
     public AdminPanel(ApplicationHandler window) {
         mHandler = window;
@@ -36,7 +42,22 @@ public class AdminPanel extends JPanel {
         leftPanel.add(scrollPane, BorderLayout.CENTER);
 
         add(leftPanel, BorderLayout.WEST);
-        add(createUtilityPanel(), BorderLayout.CENTER);
+        
+        JButton refreshButton = Factory.createButton("Refresh");
+        refreshButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				updateSurveyList();
+			}
+		});
+        leftPanel.add(refreshButton, BorderLayout.NORTH);
+        
+        mSurveyView = Factory.createPanel();
+        add(mSurveyView, BorderLayout.CENTER);
+        mSurveyView.setLayout(new BoxLayout(mSurveyView, BoxLayout.Y_AXIS));
+        add(createUtilityPanel(), BorderLayout.EAST);
     }
     
     private void createMenu() {
@@ -81,23 +102,71 @@ public class AdminPanel extends JPanel {
         });
         mailMenu.add(sendSelected);
     }
-
+    private void updateSurveyList() {
+        List<String> surveyList = Database.getAllSurveys();
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        
+        for (String survey : surveyList) {
+            listModel.addElement(survey); // Add the updated surveys to the list model
+        }
+        
+        mSurveyList.setModel(listModel); // Set the updated model to the JList
+    }
 
     private void createSurveyListView() {
-        String[] surveyList = {"Survey 1", "Survey 2", "Survey 3"};
-        mSurveyList = new JList<>(surveyList);
+    	
+        // Fetch surveys from MongoDB
+        List<String> surveyList = Database.getAllSurveys();
+        
+        // Convert the list to an array
+        String[] surveyArray = surveyList.toArray(new String[0]);
+        
+        // Create the JList with the survey array
+        mSurveyList = new JList<>(surveyArray);
         mSurveyList.setBackground(Factory.BACKGROUND_LIGHT_COLOR);
         mSurveyList.setForeground(Factory.FOREGROUND_COLOR);
         mSurveyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+     // Add a ListSelectionListener to the mSurveyList JList
         mSurveyList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    String selectedSurvey = mSurveyList.getSelectedValue();
-                    System.out.println(selectedSurvey);
-                }
-            }
+        	public void valueChanged(ListSelectionEvent e) {
+        	    if (!e.getValueIsAdjusting()) {
+        	        // Get the selected survey
+        	        String selectedSurvey = mSurveyList.getSelectedValue();
+
+        	        // Fetch the survey questions and answers with usernames from the database
+        	        Map<String, List<String>> surveyData = Database.getSurveyQuestionsAndAnswers(selectedSurvey);
+        	        List<String> questions = surveyData.get("questions");
+        	        List<String> answers = surveyData.get("answers");
+        	        List<String> usernames = surveyData.get("usernames");
+
+        	        // Clear the surveyView panel before displaying the questions and answers
+        	        mSurveyView.removeAll();
+
+        	        // Display the survey questions and answers
+        	        for (int i = 0; i < questions.size(); i++) {
+        	            String question = questions.get(i);
+        	            JLabel questionLabel = Factory.createHeading("Question:\n" + question);
+        	            mSurveyView.add(questionLabel);
+
+        	            List<String> userResponses = new ArrayList<>();
+        	            for (int j = 0; j <= i; j++) {
+        	                String username = usernames.get(j);
+        	                String answer = answers.get(j);
+        	                mSurveyView.add(Factory.createLabel(username + ": " + answer));
+        	            }
+        	        }
+
+        	        // Update the surveyView panel to reflect the changes
+        	        mSurveyView.revalidate();
+        	        mSurveyView.repaint();
+        	    }
+        	}
+
+
         });
+
     }
+
 
     private void createUtilityButtons() {
         mSendMailButton = Factory.createButton("Send Main");

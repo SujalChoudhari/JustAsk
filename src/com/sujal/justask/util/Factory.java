@@ -56,7 +56,7 @@ public final class Factory {
     
     public static JTextField createTextField(int columns) {
         JTextField textField = new JTextField(columns);
-        textField.setMaximumSize(new Dimension(600, 38));
+        textField.setMaximumSize(new Dimension(600, 28));
         textField.setMargin(new Insets(5, 5, 5, 5));
         textField.setFont(NORMAL_FONT);
         textField.setBackground(BACKGROUND_LIGHT_COLOR);
@@ -67,7 +67,7 @@ public final class Factory {
     public static JPasswordField createPasswordField(int columns) {
         JPasswordField passwordField = new JPasswordField(columns);
         passwordField.setMargin(new Insets(5, 5, 5, 5));
-        passwordField.setMaximumSize(new Dimension(600, 38));
+        passwordField.setMaximumSize(new Dimension(600, 28));
         passwordField.setFont(NORMAL_FONT);
         passwordField.setBackground(BACKGROUND_LIGHT_COLOR);
         passwordField.setForeground(FOREGROUND_COLOR);
@@ -76,7 +76,7 @@ public final class Factory {
     
     public static JButton createButton(String text) {
         JButton button = new JButton(text);
-        button.setPreferredSize(button.getMinimumSize());
+//        button.setMinimumSize(new Dimension(300,100));
         button.setBackground(BACKGROUND_LIGHT_COLOR);
         button.setForeground(FOREGROUND_COLOR);
         button.setFont(BUTTON_FONT);

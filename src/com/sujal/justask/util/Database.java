@@ -1,13 +1,16 @@
 package com.sujal.justask.util;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import org.bson.Document;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Database {
 	private MongoClient mMongoClient;
@@ -53,12 +56,15 @@ public class Database {
 	}
 
 	public static void createSurvey(String name, List<String> surveyQuestions) {
-		List<Document> surveyAnswerList = new ArrayList<Document>();
-		Document surveyDocument = new Document("name", name).append("questions", surveyQuestions)
-				.append("surveyResponces", surveyAnswerList);
+	    List<List<Document>> surveyResponses = new ArrayList<>();
 
-		CONNECTED_DATABASE.insertDocument("survey", surveyDocument);
+	    Document surveyDocument = new Document("name", name)
+	            .append("questions", surveyQuestions)
+	            .append("surveyResponses", surveyResponses);
+
+	    CONNECTED_DATABASE.insertDocument("survey", surveyDocument);
 	}
+
 
 	public static void addSurveyAnswers(String surveyName, String username, List<String> answers) {
 		Document filter = new Document("name", username);
@@ -77,8 +83,81 @@ public class Database {
 
 		return userDocument != null;
 	}
+	
+	public static List<String> getAllSurveys() {
+	    List<String> surveyList = new ArrayList<>();
 
+	    MongoCollection<Document> collection = CONNECTED_DATABASE.mDatabase.getCollection("survey");
+	    FindIterable<Document> surveys = collection.find();
+
+	    for (Document survey : surveys) {
+	        String surveyName = survey.getString("name");
+	        surveyList.add(surveyName);
+	    }
+
+	    return surveyList;
+	}
+	
+	public static Map<String, List<String>> getSurveyQuestionsAndAnswers(String surveyName) {
+	    Map<String, List<String>> surveyData = new HashMap<>();
+	    List<String> questions = new ArrayList<>();
+	    List<String> answers = new ArrayList<>();
+	    List<String> usernames = new ArrayList<>();
+
+	    Document filter = new Document("name", surveyName);
+	    Document surveyDocument = CONNECTED_DATABASE.findDocument("survey", filter);
+
+	    if (surveyDocument != null) {
+	        @SuppressWarnings("unchecked")
+	        List<String> surveyQuestions = (List<String>) surveyDocument.get("questions");
+	        questions.addAll(surveyQuestions);
+
+	        @SuppressWarnings("unchecked")
+			List<List<Document>> surveyResponses = (List<List<Document>>) surveyDocument.get("surveyResponses");
+
+	        if (surveyResponses != null) {
+	            for (List<Document> responseList : surveyResponses) {
+	                for (Document response : responseList) {
+	                    String surveyAnswer = response.getString("response");
+	                    answers.add(surveyAnswer);
+
+	                    String username = response.getString("user");
+	                    usernames.add(username);
+	                }
+	            }
+	        }
+	    }
+
+	    surveyData.put("questions", questions);
+	    surveyData.put("answers", answers);
+	    surveyData.put("usernames", usernames);
+
+	    return surveyData;
+	}
+
+
+
+	
+	public static boolean verifyAdmin(String username, String password) {
+		Document filter = new Document("name", username);
+		filter.append("password", password);
+		filter.append("isAdmin", true);
+
+		Document userDocument = CONNECTED_DATABASE.findDocument("user", filter);
+
+		return userDocument != null;
+	}
+
+	
+	// only run when Admin needs to be created
 	public static void main(String[] args) {
-		createUser("admin", "admin", true);
+		if(! verifyAdmin("admin","admin")) {
+			createUser("admin", "admin", true);
+			System.out.println("NEW ADMIN CREATED");
+		}
+		else {
+			System.out.println("ADMIN ALREADY EXISTS. RUN APPLICATION");
+		}
+		
 	}
 }

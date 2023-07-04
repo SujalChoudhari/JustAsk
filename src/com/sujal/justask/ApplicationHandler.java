@@ -22,7 +22,6 @@ public class ApplicationHandler  {
 		loginFrame.setMinimumSize(new Dimension(Constants.WINDOW_WIDTH,Constants.WINDOW_HEIGHT));
 		loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		loginFrame.add(new LoginPanel(this));
-		loginFrame.pack();
 		loginFrame.setVisible(true);
 	}
 	
@@ -33,7 +32,6 @@ public class ApplicationHandler  {
 		adminFrame.setVisible(true);
 		adminFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		adminFrame.add(new AdminPanel(this));
-		adminFrame.pack();
 		adminFrame.setVisible(true);
 	}
 	
