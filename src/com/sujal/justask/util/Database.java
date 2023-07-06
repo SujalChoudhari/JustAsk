@@ -67,13 +67,26 @@ public class Database {
 
 
 	public static void addSurveyAnswers(String surveyName, String username, List<String> answers) {
-		Document filter = new Document("name", username);
-		Document surveyAnswerDocument = new Document("surveyName", surveyName).append("answers", answers);
-
-		Document update = new Document("$push", new Document("surveyResponses", surveyAnswerDocument));
-
-		CONNECTED_DATABASE.updateDocument("user", filter, update);
+	    Document filter = new Document("name", surveyName);
+	    System.out.println(surveyName);
+	    
+	    List<Document> userResponses = new ArrayList<>();
+	    for (String answer : answers) {
+	        Document responseDocument = new Document("user", username).append("response", answer);
+	        userResponses.add(responseDocument);
+	        System.out.println(username);
+	        System.out.println(answer);
+	    }
+	    
+	    Document update = new Document("$push", new Document("surveyResponses", userResponses));
+	    
+	    MongoCollection<Document> collection = CONNECTED_DATABASE.mDatabase.getCollection("survey");
+	    collection.updateOne(filter, update);
 	}
+
+
+
+
 
 	public static boolean verifyUser(String username, String password) {
 		Document filter = new Document("name", username);

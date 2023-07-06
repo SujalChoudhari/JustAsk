@@ -132,6 +132,9 @@ public class AdminPanel extends JPanel {
         mSurveyList.addListSelectionListener(new ListSelectionListener() {
         	public void valueChanged(ListSelectionEvent e) {
         	    if (!e.getValueIsAdjusting()) {
+        	    	mSurveyView.removeAll();
+        	        mSurveyView.revalidate();
+        	    	mSurveyView.repaint();
         	        // Get the selected survey
         	        String selectedSurvey = mSurveyList.getSelectedValue();
 
@@ -146,7 +149,7 @@ public class AdminPanel extends JPanel {
 					List<List<Document>> responseStrings = (List<List<Document>>) surveyData.get("surveyResponses");
         	        
         	        for(String question : questionStrings) {
-        	        	mSurveyView.removeAll();
+        	        	
         	        	if(responseStrings.size() < questionStrings.size()) {
         	        		mSurveyView.add(Factory.createLabel("Not Enough Data"));
         	        		return;
@@ -161,8 +164,6 @@ public class AdminPanel extends JPanel {
         	        				));
         	        	}
         	        }
-        	        
-        	        
         	        
         	        mSurveyView.revalidate();
         	        mSurveyView.repaint();

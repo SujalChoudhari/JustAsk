@@ -110,8 +110,11 @@ public class LoginPanel extends JPanel {
 			if (Database.verifyAdmin(usernameString, passwordString)) {
 				mHandler.showAdminWindow();
 				mHandler.loginFrame.setVisible(false);
+				mHandler.userIDString = usernameString;
 			} else if (Database.verifyUser(usernameString, passwordString)) {
-
+				mHandler.showUserWindow();
+				mHandler.loginFrame.setVisible(false);
+				mHandler.userIDString = usernameString;
 			} else {
 				mSubtitleLabel.setText("Password or Username Incorrect. Ask your Admin to add");
 				mSubtitleLabel.setForeground(new Color(200, 55, 55));
