@@ -69,20 +69,23 @@ public class Database {
 	public static void addSurveyAnswers(String surveyName, String username, List<String> answers) {
 	    Document filter = new Document("name", surveyName);
 	    System.out.println(surveyName);
-	    
+
 	    List<Document> userResponses = new ArrayList<>();
+	    List<List<Document>> surveyResponses = new ArrayList<>();
+
 	    for (String answer : answers) {
 	        Document responseDocument = new Document("user", username).append("response", answer);
 	        userResponses.add(responseDocument);
-	        System.out.println(username);
-	        System.out.println(answer);
 	    }
-	    
-	    Document update = new Document("$push", new Document("surveyResponses", userResponses));
-	    
+
+	    surveyResponses.add(userResponses);
+
+	    Document update = new Document("$push", new Document("surveyResponses", surveyResponses));
+
 	    MongoCollection<Document> collection = CONNECTED_DATABASE.mDatabase.getCollection("survey");
 	    collection.updateOne(filter, update);
 	}
+
 
 
 

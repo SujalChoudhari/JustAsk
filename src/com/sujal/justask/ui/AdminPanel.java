@@ -135,6 +135,7 @@ public class AdminPanel extends JPanel {
         	    	mSurveyView.removeAll();
         	        mSurveyView.revalidate();
         	    	mSurveyView.repaint();
+        	    	
         	        // Get the selected survey
         	        String selectedSurvey = mSurveyList.getSelectedValue();
 
@@ -150,19 +151,20 @@ public class AdminPanel extends JPanel {
         	        
         	        for(String question : questionStrings) {
         	        	
-        	        	if(responseStrings.size() < questionStrings.size()) {
+        	        	if(responseStrings.size() <= 0) {
         	        		mSurveyView.add(Factory.createLabel("Not Enough Data"));
         	        		return;
         	        	}
         	        	mSurveyView.add(Factory.createHeading(question));
-        	        	List<Document> nameList = (List<Document>) responseStrings.get(questionStrings.indexOf(question));
-        				
-        	        	for(Document response: nameList) {
-        	        		mSurveyView.add(Factory.createLabel(
-        	        				response.getString("user")
-        	        				+ " : " + response.getString("response")
-        	        				));
+
+//        	        	
+        	        	for(List<Document> usersDocuments : responseStrings) {
+        	        		List<Document> answersDocument  = (List<Document>) usersDocuments.get(0);
+        	        		System.out.println(answersDocument.get(questionStrings.indexOf(question)));
+        	        		mSurveyView.add(Factory.createLabel(answersDocument.get(questionStrings.indexOf(question)).getString("response")));
         	        	}
+        	        	
+        	        	
         	        }
         	        
         	        mSurveyView.revalidate();
